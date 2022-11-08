@@ -5,6 +5,8 @@ var buildheap: BuildHeap
 var intentos: int = 0
 var intentos_max: int = 3
 var fase_actual: Fase
+var estado_corrutina	# GDScriptFunctionState
+var devolucion_de_respuesta
 
 # Colores
 export var color_nodo: Color = Color.steelblue
@@ -16,6 +18,7 @@ onready var scroll_lista_valores: Node = $ScrollListaDeValores
 
 # Señales
 signal nodo_seleccionado(valor,i)
+signal devolucion_de_respuesta(resultado, tu_respuesta)
 
 # Input
 var is_dragging: bool = false
@@ -82,6 +85,37 @@ func _ready():
 
 func _exit_tree():
 	buildheap.free()
+	
+func EmpezarSimulador():
+	estado_corrutina = CorutinaSimulador()
+# Éste será la función que aplicará el algoritmo de BuildHeap pero paso a paso.
+# Esperará por la respuesta del usuario cuando se le solicite
+func CorutinaSimulador() -> bool:
+	var respuesta = null
+	print("Primero, marcar la lista de elementos desordenados.")
+	CambiarFase( PrimeraFase.new() )
+	var fase_completada: bool = false
+	while not fase_completada:
+		respuesta = yield()
+		if respuesta is Array:
+			fase_completada = (respuesta == buildheap.VerNodosDesordenados())
+		emit_signal("devolucion_de_respuesta", fase_completada, respuesta)
+	# Señal Fase exitosa
+	#emit_signal()
+	yield()
+	
+	var nodos_desordenados: Array = buildheap.VerNodosDesordenados()
+	# Si no hay nodos desordenados, se termina.
+	if nodos_desordenados.size() > 0:
+		print("Siguiente, marcar el nodo por donde comenzar.")
+		fase_completada = false
+		#CambiarFase( )
+		while not fase_completada:
+			respuesta = yield()
+			fase_completada = respuesta == nodos_desordenados.back()
+	else:
+		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
+	return true
 
 func SacarNodoDeRaiz(nombre: String) -> Node:
 	var nodo: Node = get_node("/root").get_node_or_null(nombre)
@@ -160,6 +194,9 @@ class Fase extends Node:
 		$"../lblInstruccion".text = mensaje
 	func escribirMensaje(mensaje: String = ""):
 		$"../lblInfo".text = mensaje
+	func enviarRespuesta(respuesta):
+		$"..".estado_corutina = $"..".estado_corutina.resume(respuesta)
+		#return resultado
 
 # Primera fase: seleccionar los elementos que no cumplen con la condición de
 # orden de la MinHeap
@@ -184,6 +221,8 @@ class PrimeraFase extends Fase:
 		match estado:
 			0: # En progreso
 				intentos += 1
+				# Enviar respuesta
+				# enviarRespuesta(seleccionados)
 				var desordenados: Array = buildheap.VerNodosDesordenados()
 				seleccionados.sort()
 				if desordenados == seleccionados:
@@ -205,7 +244,26 @@ class PrimeraFase extends Fase:
 								$"../btnConfirmar".text = "REPASAR"
 					escribirMensaje("\n".join(lineas_msj))
 			1: # Éxito
+				# Clic en SEGUIR >
 				pass
 			2: # Falló
+				# Clic en REPASAR
 				pass
 
+class FaceFin extends Fase:
+	func _init():
+		._init()
+	func alEntrar():
+		.alEntrar() # De la superclase
+		$"../btnConfirmar".text = "Finalizar"
+	func alConfirmar():
+		#OS.kill()
+		pass
+
+class FaseFinSinNodosDesordenados extends FaceFin:
+	func _init():
+		._init()
+	func alEntrar():
+		.alEntrar() # De la superclase
+		escribirInstruccion("Bueno... Se acabó.")
+		escribirMensaje("No hay nodos desordenados. No hay nada más que hacer.")
