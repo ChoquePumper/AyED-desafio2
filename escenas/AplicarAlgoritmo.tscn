@@ -1,0 +1,118 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://fonts/LiberationSans-Bold.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://escenas/AplicarAlgoritmo.gd" type="Script" id=2]
+[ext_resource path="res://default_theme.tres" type="Theme" id=3]
+[ext_resource path="res://fonts/LiberationSans-Regular.ttf" type="DynamicFontData" id=4]
+[ext_resource path="res://fonts/LiberationSans-Italic.ttf" type="DynamicFontData" id=5]
+
+[sub_resource type="DynamicFont" id=2]
+size = 24
+font_data = ExtResource( 4 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 14
+font_data = ExtResource( 5 )
+
+[sub_resource type="DynamicFont" id=1]
+size = 48
+outline_size = 1
+outline_color = Color( 0.301961, 0.301961, 0.301961, 1 )
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=4]
+size = 20
+font_data = ExtResource( 4 )
+
+[node name="AplicarAlgoritmo" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 2 )
+
+[node name="NodosDelArbol" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ScrollListaDeValores" type="ScrollContainer" parent="."]
+anchor_right = 1.0
+margin_bottom = 60.0
+follow_focus = true
+
+[node name="ListaDeValores" type="HBoxContainer" parent="ScrollListaDeValores"]
+margin_right = 1024.0
+margin_bottom = 32.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+alignment = 1
+
+[node name="Valor1" type="LineEdit" parent="ScrollListaDeValores/ListaDeValores"]
+margin_left = 472.0
+margin_right = 552.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 80, 0 )
+size_flags_horizontal = 4
+theme = ExtResource( 3 )
+custom_constants/minimum_spaces = 6
+custom_fonts/font = SubResource( 2 )
+align = 1
+max_length = 19
+expand_to_text_length = true
+placeholder_text = "<...>"
+placeholder_alpha = 0.25
+caret_blink = true
+
+[node name="Label" type="Label" parent="ScrollListaDeValores/ListaDeValores/Valor1"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 3 )
+text = "1"
+align = 1
+valign = 2
+
+[node name="lblInstruccion" type="Label" parent="."]
+anchor_right = 1.0
+margin_top = 64.0
+margin_bottom = 14.0
+custom_fonts/font = SubResource( 1 )
+text = "Ingreso completo - Marque los valores desordenados y luego haga clic en FIN"
+align = 1
+autowrap = true
+
+[node name="lblInfo" type="Label" parent="."]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 2.0
+margin_right = -2.0
+margin_bottom = -64.0
+grow_vertical = 0
+custom_fonts/font = SubResource( 4 )
+text = "Aquí va texto con información sobre la acción realizada como un mensaje de error."
+align = 1
+
+[node name="btnAtras" type="Button" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_right = 96.0
+grow_vertical = 0
+rect_min_size = Vector2( 0, 48 )
+theme = ExtResource( 3 )
+text = "<<"
+
+[node name="btnConfirmar" type="Button" parent="."]
+anchor_left = 0.65
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_vertical = 0
+rect_min_size = Vector2( 0, 48 )
+theme = ExtResource( 3 )
+text = "FIN"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="nodo_seleccionado" from="." to="." method="_on_AplicarAlgoritmo_nodo_seleccionado"]
+[connection signal="pressed" from="btnConfirmar" to="." method="_on_btnConfirmar_pressed"]

@@ -1,0 +1,73 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Node",
+"class": "BuildHeap",
+"language": "GDScript",
+"path": "res://clases/buildheap.gd"
+}, {
+"base": "Node",
+"class": "HeapBinaria",
+"language": "GDScript",
+"path": "res://clases/heapbinaria.gd"
+}, {
+"base": "Control",
+"class": "NodoBinario",
+"language": "GDScript",
+"path": "res://clases/nodobinario.gd"
+} ]
+_global_script_class_icons={
+"BuildHeap": "",
+"HeapBinaria": "",
+"NodoBinario": ""
+}
+
+[application]
+
+config/name="AyED desafio 2"
+run/main_scene="res://escenas/PantallaInicial.tscn"
+run/low_processor_mode=true
+config/icon="res://icon.png"
+
+[autoload]
+
+Global="*res://autoload/global.gd"
+Common="*res://autoload/common.gd"
+
+[debug]
+
+settings/stdout/verbose_stdout=true
+
+[display]
+
+window/dpi/allow_hidpi=true
+window/vsync/use_vsync=false
+window/energy_saving/keep_screen_on=false
+window/handheld/orientation="sensor_landscape"
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[locale]
+
+test="es"
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
+environment/default_environment="res://default_env.tres"

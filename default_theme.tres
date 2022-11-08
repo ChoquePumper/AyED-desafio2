@@ -1,0 +1,71 @@
+[gd_resource type="Theme" load_steps=9 format=2]
+
+[ext_resource path="res://temas/default_theme/slider/grabber.svg" type="Texture" id=1]
+[ext_resource path="res://fonts/LiberationSans-Regular.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="DynamicFont" id=4]
+size = 22
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.0252, 0.5005, 0.84, 1 )
+border_color = Color( 0.0196078, 0.454902, 0.772549, 1 )
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0.0196078, 0.454902, 0.772549, 1 )
+border_color = Color( 0.0196078, 0.454902, 0.772549, 1 )
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id=3]
+bg_color = Color( 0.015, 0.297917, 0.5, 1 )
+border_color = Color( 0.0196078, 0.454902, 0.772549, 1 )
+border_blend = true
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id=6]
+content_margin_left = 4.0
+content_margin_right = 4.0
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color( 0.133333, 0.286275, 0.517647, 0.858824 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 6
+border_color = Color( 0.8, 0.8, 0.8, 0.25098 )
+border_blend = true
+
+[sub_resource type="StyleBoxFlat" id=5]
+content_margin_left = 4.0
+content_margin_right = 4.0
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color( 0.104, 0.2224, 0.4, 1 )
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color( 0.8, 0.8, 0.8, 0.25098 )
+border_blend = true
+
+[resource]
+Button/fonts/font = SubResource( 4 )
+Button/styles/hover = SubResource( 1 )
+Button/styles/normal = SubResource( 2 )
+Button/styles/pressed = SubResource( 3 )
+HSlider/icons/grabber = ExtResource( 1 )
+LineEdit/styles/focus = SubResource( 6 )
+LineEdit/styles/normal = SubResource( 5 )
+LineEdit/styles/read_only = SubResource( 5 )

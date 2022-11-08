@@ -1,0 +1,236 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://Bola.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scripts/Bola-select-n.gd" type="Script" id=2]
+[ext_resource path="res://escenas/VentanaPrincipal.gd" type="Script" id=3]
+[ext_resource path="res://fonts/LiberationSans-Bold.ttf" type="DynamicFontData" id=4]
+[ext_resource path="res://default_theme.tres" type="Theme" id=5]
+
+[sub_resource type="DynamicFont" id=7]
+size = 48
+font_data = ExtResource( 4 )
+
+[sub_resource type="DynamicFont" id=8]
+size = 28
+font_data = ExtResource( 4 )
+
+[sub_resource type="DynamicFont" id=13]
+size = 64
+font_data = ExtResource( 4 )
+
+[sub_resource type="Animation" id=9]
+resource_name = "Entrada"
+length = 0.5
+step = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnContinuar:anchor_left")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 5, 1 ),
+"update": 0,
+"values": [ 0.6, 0.0 ]
+}
+
+[sub_resource type="Animation" id=12]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Label2:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Label:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=11]
+resource_name = "Salida"
+length = 0.5
+step = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnContinuar:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 48.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Label2:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Label:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.25, 0.5 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+
+[sub_resource type="Animation" id=14]
+resource_name = "btnDecInc_salida"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("CenterContainer/Bola/btnDecrementar:margin_right")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 0.125, 1 ),
+"update": 0,
+"values": [ -16, 80 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("CenterContainer/Bola/btnIncrementar:margin_left")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 0.125, 1 ),
+"update": 0,
+"values": [ 16.0, -80 ]
+}
+
+[node name="VentanaPrincipal" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+
+[node name="Label" type="Label" parent="."]
+anchor_right = 1.0
+margin_bottom = 96.0
+custom_fonts/font = SubResource( 7 )
+text = "¿Cuantos elementos tendrá tu heap?"
+align = 1
+valign = 2
+autowrap = true
+
+[node name="Label2" type="Label" parent="."]
+anchor_right = 1.0
+margin_left = 8.0
+margin_top = 96.0
+margin_right = -8.0
+custom_fonts/font = SubResource( 8 )
+text = "Ingresa la cantidad de elementos con los que simularás el proceso."
+align = 1
+autowrap = true
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Bola" parent="CenterContainer" instance=ExtResource( 1 )]
+margin_left = 384.0
+margin_top = 172.0
+margin_right = 640.0
+margin_bottom = 428.0
+rect_min_size = Vector2( 256, 256 )
+script = ExtResource( 2 )
+N_elementos = 9
+
+[node name="btnDecrementar" type="Button" parent="CenterContainer/Bola"]
+show_behind_parent = true
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_left = 16.0
+margin_top = -39.0
+margin_right = -16.0
+margin_bottom = 39.0
+grow_horizontal = 0
+grow_vertical = 2
+rect_min_size = Vector2( 64, 0 )
+theme = ExtResource( 5 )
+custom_fonts/font = SubResource( 13 )
+text = "-"
+
+[node name="btnIncrementar" type="Button" parent="CenterContainer/Bola"]
+show_behind_parent = true
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = 16.0
+margin_top = -39.0
+margin_right = -16.0
+margin_bottom = 39.0
+grow_vertical = 2
+rect_min_size = Vector2( 64, 0 )
+theme = ExtResource( 5 )
+custom_fonts/font = SubResource( 13 )
+text = "+"
+
+[node name="SliderNElementos" type="HSlider" parent="."]
+anchor_left = 0.2
+anchor_top = 0.75
+anchor_right = 0.8
+anchor_bottom = 0.75
+margin_bottom = 35.0
+theme = ExtResource( 5 )
+min_value = 9.0
+max_value = 20.0
+value = 9.0
+rounded = true
+ticks_on_borders = true
+
+[node name="btnContinuar" type="Button" parent="."]
+anchor_left = 0.6
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
+rect_min_size = Vector2( 0, 48 )
+theme = ExtResource( 5 )
+text = "Continuar"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/Entrada = SubResource( 9 )
+anims/RESET = SubResource( 12 )
+anims/Salida = SubResource( 11 )
+anims/btnDecInc_salida = SubResource( 14 )
+
+[connection signal="pressed" from="CenterContainer/Bola/btnDecrementar" to="." method="_on_btnDecInc_pressed" binds= [ -1 ]]
+[connection signal="pressed" from="CenterContainer/Bola/btnIncrementar" to="." method="_on_btnDecInc_pressed" binds= [ 1 ]]
+[connection signal="value_changed" from="SliderNElementos" to="." method="_on_SliderNElementos_value_changed"]
+[connection signal="pressed" from="btnContinuar" to="." method="_on_btnContinuar_pressed"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]

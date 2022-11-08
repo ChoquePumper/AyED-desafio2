@@ -1,0 +1,173 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://fonts/LiberationSans-Italic.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://fonts/LiberationSans-Regular.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://escenas/IngresarValores.gd" type="Script" id=3]
+[ext_resource path="res://default_theme.tres" type="Theme" id=4]
+[ext_resource path="res://fonts/LiberationSans-Bold.ttf" type="DynamicFontData" id=6]
+
+[sub_resource type="GDScript" id=4]
+script/source = "extends Control
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+"
+
+[sub_resource type="DynamicFont" id=2]
+size = 24
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=1]
+size = 14
+font_data = ExtResource( 1 )
+
+[sub_resource type="Animation" id=3]
+resource_name = "Entrada"
+length = 0.75
+step = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("ScrollListaDeValores:rect_position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.75 ),
+"transitions": PoolRealArray( 5, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ), Vector2( 0, -64 ) ]
+}
+
+[sub_resource type="Animation" id=8]
+resource_name = "MostrarBotonConfirmar"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnConfirmarValores:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 5, 1 ),
+"update": 0,
+"values": [ 0.0, 48 ]
+}
+
+[sub_resource type="Animation" id=9]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnConfirmarValores:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
+[sub_resource type="DynamicFont" id=7]
+size = 48
+font_data = ExtResource( 6 )
+
+[node name="IngresarValores" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+
+[node name="NodosDelArbol" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 4 )
+
+[node name="ScrollListaDeValores" type="ScrollContainer" parent="."]
+anchor_right = 1.0
+margin_bottom = 60.0
+follow_focus = true
+
+[node name="ListaDeValores" type="HBoxContainer" parent="ScrollListaDeValores"]
+margin_right = 1024.0
+margin_bottom = 32.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+alignment = 1
+
+[node name="Valor1" type="LineEdit" parent="ScrollListaDeValores/ListaDeValores"]
+margin_left = 472.0
+margin_right = 552.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 80, 0 )
+size_flags_horizontal = 4
+theme = ExtResource( 4 )
+custom_constants/minimum_spaces = 6
+custom_fonts/font = SubResource( 2 )
+align = 1
+max_length = 19
+expand_to_text_length = true
+placeholder_text = "<...>"
+placeholder_alpha = 0.25
+caret_blink = true
+
+[node name="Label" type="Label" parent="ScrollListaDeValores/ListaDeValores/Valor1"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 1 )
+text = "1"
+align = 1
+valign = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/Entrada = SubResource( 3 )
+anims/MostrarBotonConfirmar = SubResource( 8 )
+anims/RESET = SubResource( 9 )
+
+[node name="RetardoSetearCampo" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="btnAtras" type="Button" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_right = 96.0
+grow_vertical = 0
+rect_min_size = Vector2( 0, 48 )
+theme = ExtResource( 4 )
+text = "<<"
+
+[node name="btnConfirmarValores" type="Button" parent="."]
+anchor_left = 0.6
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
+rect_min_size = Vector2( 0, 48 )
+theme = ExtResource( 4 )
+text = "Confirmar valores"
+
+[node name="Label" type="Label" parent="."]
+anchor_right = 1.0
+margin_top = 64.0
+custom_fonts/font = SubResource( 7 )
+text = "Ingresá los N valores de tu heap"
+align = 1
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="gui_input" from="NodosDelArbol" to="." method="_on_gui_input"]
+[connection signal="timeout" from="RetardoSetearCampo" to="." method="_on_RetardoSetearCampo_timeout"]
+[connection signal="pressed" from="btnAtras" to="." method="_on_btnAtras_pressed"]
+[connection signal="pressed" from="btnConfirmarValores" to="." method="_on_btnConfirmarValores_pressed"]
