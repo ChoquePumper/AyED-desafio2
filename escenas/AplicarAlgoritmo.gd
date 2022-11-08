@@ -75,7 +75,7 @@ func _ready():
 	if nodos_del_arbol:
 		(nodos_del_arbol as Control).connect("gui_input", self, "_on_gui_input")
 	
-	CambiarFase( PrimeraFase.new(buildheap) )
+	CambiarFase( PrimeraFase.new() )
 	#print( buildheap.VerNodosQueNoCumplenConLaCondicionDeOrden() )
 	#buildheap.AplicarAlgoritmo()
 	#print( buildheap.minheap.GetCopiaArreglo() )
@@ -146,16 +146,18 @@ func _on_btnConfirmar_pressed():
 
 class Fase extends Node:
 	var buildheap: BuildHeap
-	func _init(bh=null):
-		buildheap = bh
+	func _init(): pass
 	# Al entrar o salir de la fase
-	func alEntrar(): pass
+	func alEntrar():
+		buildheap = $"..".buildheap
 	func alSalir(): pass
 	# Interacción
 	func alSeleccionar(valor:bool, i:int):
 		pass
 	func alConfirmar(): pass
 	
+	func escribirInstruccion(mensaje: String):
+		$"../lblInstruccion".text = mensaje
 	func escribirMensaje(mensaje: String = ""):
 		$"../lblInfo".text = mensaje
 
@@ -163,19 +165,47 @@ class Fase extends Node:
 # orden de la MinHeap
 class PrimeraFase extends Fase:
 	var seleccionados: Array = []
+	var intentos: int = 0
+	var intentos_max: int = 3
+	var estado: int = 0
 	
-	func _init(bh=null):
-		._init(bh)
+	func _init():
+		._init()
 	func alEntrar():
+		.alEntrar() # De la superclase
+		$"../btnConfirmar".text = "FIN"
 		escribirMensaje("") # Limpiar
 	func alSeleccionar(valor:bool, i:int):
-		if valor: seleccionados.append(i)
-		else: seleccionados.erase(i)
+		if estado == 0:
+			if valor: seleccionados.append(i)
+			else: seleccionados.erase(i)
+			$"../btnConfirmar".text = "FIN (%d seleccionados)" % seleccionados.size()
 	func alConfirmar():
-		var desordenados: Array = buildheap.VerNodosDesordenados()
-		seleccionados.sort()
-		if desordenados == seleccionados:
-			print("Bien")
-		else:
-			print("Mal")
+		match estado:
+			0: # En progreso
+				intentos += 1
+				var desordenados: Array = buildheap.VerNodosDesordenados()
+				seleccionados.sort()
+				if desordenados == seleccionados:
+					print("Bien")
+					escribirMensaje("¡Excelente! Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
+					estado = 1
+					$"../btnConfirmar".text = "SEGUIR >"
+				else:
+					print("Mal")
+					var lineas_msj: PoolStringArray
+					lineas_msj.append("Para que sea una heap los nodos deben cumplir con una condición de orden (Intento %d/%d)"%[intentos,intentos_max] )
+					match intentos:
+						2:
+							lineas_msj.append("Tal condición la deben cumplir los padres respecto de sus hijos.")
+						_:
+							if intentos >= 3:
+								lineas_msj.append("Repasá los contenidos relacionados y consultá los ejercicios resueltos. Dale clic en REPASAR")
+								estado = 2
+								$"../btnConfirmar".text = "REPASAR"
+					escribirMensaje("\n".join(lineas_msj))
+			1: # Éxito
+				pass
+			2: # Falló
+				pass
 
