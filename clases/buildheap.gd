@@ -25,6 +25,7 @@ func VerNodosDesordenados() -> Array:
 	return lista_de_posiciones
 
 func GetSize() -> int: return minheap.getSize()
+func GetValor(i:int) -> int: return minheap.getValor(i)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -39,3 +40,11 @@ func AplicarAlgoritmo():
 	while i_elemento >= 1:
 		print( minheap._PercolateDown(i_elemento) )
 		i_elemento -= 1
+		
+func IntercambiarNodos(p_a:int, p_b:int) -> bool:
+	if p_a<=0 or p_b<=0 or p_a>GetSize() or p_b>GetSize():
+		return false
+	var tmp = minheap.arreglo[p_a]
+	minheap.arreglo[p_a] = minheap.arreglo[p_b]
+	minheap.arreglo[p_b] = tmp
+	return true

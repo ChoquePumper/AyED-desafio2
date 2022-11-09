@@ -142,9 +142,18 @@ func CorutinaSimulador() -> bool:
 			# Seleccionar con que nodo hay que filtrar
 			CambiarFase( FaseFiltrado.new(p) )
 			fase_completada = false
+			var p_filtrado: int = p
 			while not fase_completada:
 				respuesta = yield()
-				fase_completada = (respuesta == null)
+				# Comprobar si hay que filtrar
+				var respuesta_correcta = VerSiguienteFiltradoHaciaAbajo(p_filtrado)
+				var correcto: bool = respuesta == respuesta_correcta
+				if correcto and respuesta!=null:
+					# Realizar el filtrado si la respuesta es correcta
+					IntercambiarNodos(p_filtrado, int(respuesta))
+					p_filtrado = int(respuesta)
+				emit_signal("devolucion_de_respuesta", correcto, respuesta)
+				fase_completada = respuesta_correcta == null
 			p -= 1
 			primera_iteracion = false
 	else:
@@ -152,6 +161,22 @@ func CorutinaSimulador() -> bool:
 		CambiarFase( FaseFinSinNodosDesordenados.new() )
 		yield()
 	return true
+
+# Devuelve null si no se puede filtrar o una posicion
+func VerSiguienteFiltradoHaciaAbajo(p: int):
+	if HeapBinaria.posicionHijoIzquierdo(p) <= buildheap.GetSize():
+		var i_hijo_menor = HeapBinaria.posicionHijoIzquierdo(p)
+		if (i_hijo_menor+1) <= buildheap.GetSize():
+			if buildheap.GetValor(i_hijo_menor+1) < buildheap.GetValor(i_hijo_menor):
+				i_hijo_menor = i_hijo_menor+1
+		if buildheap.GetValor(i_hijo_menor) < buildheap.GetValor(p):
+			return i_hijo_menor
+	return null
+
+func IntercambiarNodos(p_a:int, p_b:int):
+	assert( buildheap.IntercambiarNodos(p_a, p_b) )
+	SetValorArreglo(p_a)
+	SetValorArreglo(p_b)
 
 func SacarNodoDeRaiz(nombre: String) -> Node:
 	var nodo: Node = get_node("/root").get_node_or_null(nombre)
@@ -165,6 +190,11 @@ func DescartarNodo(nodo: CanvasItem):
 	nodo.visible = false
 	nodo.name += "_discard"
 	nodo.queue_free()
+
+func SetValorArreglo(i:int):
+	var valor: String = str( buildheap.GetValor(i) )
+	scroll_lista_valores.get_node("ListaDeValores").get_child(i-1).text = valor
+	Common.getNodo(i).setearNumeroPorTexto( valor )
 
 func CambiarFase(fase: Fase):
 	if fase_actual != null:
@@ -379,8 +409,10 @@ class FaseFiltrado extends Fase:
 		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cual?")
 		escribirMensaje("Seleccione un nodo o haga clic en NO si no hay que intercambiar")
 		setEtiquetaBotonConfirmar("NO")
+	func alSeleccionar(valor:bool, i:int):
+		enviarRespuesta(i)
 	func alConfirmar():
-		enviarRespuesta(seleccionado)
+		enviarRespuesta(null)
 		
 class FaceFin extends Fase:
 	func _init():
