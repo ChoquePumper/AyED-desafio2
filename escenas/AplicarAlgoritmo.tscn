@@ -15,7 +15,7 @@ size = 14
 font_data = ExtResource( 5 )
 
 [sub_resource type="DynamicFont" id=1]
-size = 48
+size = 44
 outline_size = 1
 outline_color = Color( 0.301961, 0.301961, 0.301961, 1 )
 font_data = ExtResource( 1 )
@@ -114,6 +114,8 @@ text = "boton_de_confirmar"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 
+[connection signal="devolucion_de_respuesta" from="." to="." method="_on_devolucion_de_respuesta"]
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="nodo_seleccionado" from="." to="." method="_on_AplicarAlgoritmo_nodo_seleccionado"]
+[connection signal="respuesta_enviada" from="." to="." method="_on_respuesta_enviada" flags=3]
 [connection signal="pressed" from="btnConfirmar" to="." method="_on_btnConfirmar_pressed"]

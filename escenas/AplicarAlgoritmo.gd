@@ -19,6 +19,7 @@ onready var scroll_lista_valores: Node = $ScrollListaDeValores
 # Señales
 signal nodo_seleccionado(valor,i)
 signal devolucion_de_respuesta(resultado, tu_respuesta)
+signal respuesta_enviada(respuesta)
 
 # Input
 var is_dragging: bool = false
@@ -41,7 +42,8 @@ func _ready():
 		
 		#Global.generarValoresAleatorios(100)
 		# Usando el ejemplo del anexo.
-		var valores_de_prueba := [21,10,40,54, 5,36, 3, 1,45]
+		var valores_de_prueba := [1,2,3,4,5,6,7,8,9]
+		#var valores_de_prueba := [21,10,40,54, 5,36, 3, 1,45]
 		#var valores_de_prueba := [ 5, 8,12, 9, 7,10,21, 6,14, 4]
 		Global.n_elementos = valores_de_prueba.size()
 		for i in valores_de_prueba.size():
@@ -78,10 +80,11 @@ func _ready():
 	if nodos_del_arbol:
 		(nodos_del_arbol as Control).connect("gui_input", self, "_on_gui_input")
 	
-	CambiarFase( PrimeraFase.new() )
+	#CambiarFase( PrimeraFase.new() )
 	#print( buildheap.VerNodosQueNoCumplenConLaCondicionDeOrden() )
 	#buildheap.AplicarAlgoritmo()
 	#print( buildheap.minheap.GetCopiaArreglo() )
+	EmpezarSimulador()
 
 func _exit_tree():
 	buildheap.free()
@@ -115,6 +118,7 @@ func CorutinaSimulador() -> bool:
 			fase_completada = respuesta == nodos_desordenados.back()
 	else:
 		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
+		CambiarFase( FaseFinSinNodosDesordenados.new() )
 	return true
 
 func SacarNodoDeRaiz(nombre: String) -> Node:
@@ -139,6 +143,12 @@ func CambiarFase(fase: Fase):
 	fase_actual = fase
 	add_child(fase_actual)
 	fase_actual.alEntrar()
+
+func _on_respuesta_enviada(respuesta):
+	estado_corrutina = estado_corrutina.resume(respuesta)
+
+func _on_devolucion_de_respuesta(resultado, tu_respuesta):
+	fase_actual.cb_resultado(resultado, tu_respuesta)
 
 func _on_gui_input(event):
 	# Implementación para poder arrastrar el arbol
@@ -168,11 +178,11 @@ func _on_AplicarAlgoritmo_nodo_seleccionado(valor:bool, i:int):
 	fase_actual.alSeleccionar(valor,i)
 	var nodobinario: NodoBinario = Common.getNodo(i)
 	nodobinario.colorear(color_nodo_seleccion if nodobinario.esSeleccionado() else color_nodo)
-	if valor and i>1:
-			if buildheap.CumpleCondicionDeOrden(i):
-				prints("El nodo",i,"cumple la condición de orden.")
-			else:
-				prints("El nodo",i,"NO cumple la condición de orden.")
+#	if valor and i>1:
+#			if buildheap.CumpleCondicionDeOrden(i):
+#				prints("El nodo",i,"cumple la condición de orden.")
+#			else:
+#				prints("El nodo",i,"NO cumple la condición de orden.")
 
 # Relacionado a fase
 func _on_btnConfirmar_pressed():
@@ -195,8 +205,11 @@ class Fase extends Node:
 	func escribirMensaje(mensaje: String = ""):
 		$"../lblInfo".text = mensaje
 	func enviarRespuesta(respuesta):
-		$"..".estado_corutina = $"..".estado_corutina.resume(respuesta)
+		# $"..".estado_corutina = $"..".estado_corutina.resume(respuesta)
+		$"..".emit_signal("respuesta_enviada", respuesta)
 		#return resultado
+	func cb_resultado(resultado, tu_respuesta):
+		pass
 
 # Primera fase: seleccionar los elementos que no cumplen con la condición de
 # orden de la MinHeap
@@ -222,33 +235,36 @@ class PrimeraFase extends Fase:
 			0: # En progreso
 				intentos += 1
 				# Enviar respuesta
-				# enviarRespuesta(seleccionados)
-				var desordenados: Array = buildheap.VerNodosDesordenados()
-				seleccionados.sort()
-				if desordenados == seleccionados:
-					print("Bien")
-					escribirMensaje("¡Excelente! Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
-					estado = 1
-					$"../btnConfirmar".text = "SEGUIR >"
-				else:
-					print("Mal")
-					var lineas_msj: PoolStringArray
-					lineas_msj.append("Para que sea una heap los nodos deben cumplir con una condición de orden (Intento %d/%d)"%[intentos,intentos_max] )
-					match intentos:
-						2:
-							lineas_msj.append("Tal condición la deben cumplir los padres respecto de sus hijos.")
-						_:
-							if intentos >= 3:
-								lineas_msj.append("Repasá los contenidos relacionados y consultá los ejercicios resueltos. Dale clic en REPASAR")
-								estado = 2
-								$"../btnConfirmar".text = "REPASAR"
-					escribirMensaje("\n".join(lineas_msj))
+				enviarRespuesta(seleccionados)
 			1: # Éxito
 				# Clic en SEGUIR >
-				pass
+				enviarRespuesta(null)
 			2: # Falló
 				# Clic en REPASAR
 				pass
+	func cb_resultado(resultado, tu_respuesta):
+		var desordenados: Array = buildheap.VerNodosDesordenados()
+		seleccionados.sort()
+		if desordenados == seleccionados:
+			print("Bien")
+			escribirInstruccion("Bien hecho")
+			escribirMensaje("¡Excelente! Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
+			estado = 1
+			$"../btnConfirmar".text = "SEGUIR >"
+		else:
+			print("Mal")
+			var lineas_msj: PoolStringArray
+			lineas_msj.append("Para que sea una heap los nodos deben cumplir con una condición de orden (Intento %d/%d)"%[intentos,intentos_max] )
+			match intentos:
+				2:
+					lineas_msj.append("Tal condición la deben cumplir los padres respecto de sus hijos.")
+				_:
+					if intentos >= 3:
+						lineas_msj.append("Repasá los contenidos relacionados y consultá los ejercicios resueltos. Dale clic en REPASAR")
+						estado = 2
+						escribirInstruccion("Ha fallado")
+						$"../btnConfirmar".text = "REPASAR"
+			escribirMensaje("\n".join(lineas_msj))
 
 class FaceFin extends Fase:
 	func _init():
@@ -257,8 +273,8 @@ class FaceFin extends Fase:
 		.alEntrar() # De la superclase
 		$"../btnConfirmar".text = "Finalizar"
 	func alConfirmar():
-		#OS.kill()
-		pass
+		# Salir de la aplicacion
+		get_tree().quit(0)
 
 class FaseFinSinNodosDesordenados extends FaceFin:
 	func _init():
