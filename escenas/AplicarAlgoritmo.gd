@@ -19,6 +19,7 @@ onready var scroll_lista_valores: Node = $ScrollListaDeValores
 # Señales
 signal nodo_seleccionado(valor,i)
 signal devolucion_de_respuesta(resultado, tu_respuesta)
+# warning-ignore:unused_signal
 signal respuesta_enviada(respuesta)
 
 # Input
@@ -42,8 +43,8 @@ func _ready():
 		
 		#Global.generarValoresAleatorios(100)
 		# Usando el ejemplo del anexo.
-		var valores_de_prueba := [1,2,3,4,5,6,7,8,9]
-		#var valores_de_prueba := [21,10,40,54, 5,36, 3, 1,45]
+		#var valores_de_prueba := [1,2,3,4,5,6,7,8,9]
+		var valores_de_prueba := [21,10,40,54, 5,36, 3, 1,45]
 		#var valores_de_prueba := [ 5, 8,12, 9, 7,10,21, 6,14, 4]
 		Global.n_elementos = valores_de_prueba.size()
 		for i in valores_de_prueba.size():
@@ -103,8 +104,7 @@ func CorutinaSimulador() -> bool:
 		if respuesta is Array:
 			fase_completada = (respuesta == buildheap.VerNodosDesordenados())
 		emit_signal("devolucion_de_respuesta", fase_completada, respuesta)
-	# Señal Fase exitosa
-	#emit_signal()
+	# Fase exitosa
 	yield()
 	
 	var nodos_desordenados: Array = buildheap.VerNodosDesordenados()
@@ -112,13 +112,14 @@ func CorutinaSimulador() -> bool:
 	if nodos_desordenados.size() > 0:
 		print("Siguiente, marcar el nodo por donde comenzar.")
 		fase_completada = false
-		#CambiarFase( )
+		CambiarFase( FaseFiltrado.new() )
 		while not fase_completada:
 			respuesta = yield()
-			fase_completada = respuesta == nodos_desordenados.back()
+			fase_completada = (respuesta == nodos_desordenados.back())
 	else:
 		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
 		CambiarFase( FaseFinSinNodosDesordenados.new() )
+		yield()
 	return true
 
 func SacarNodoDeRaiz(nombre: String) -> Node:
@@ -143,6 +144,11 @@ func CambiarFase(fase: Fase):
 	fase_actual = fase
 	add_child(fase_actual)
 	fase_actual.alEntrar()
+
+func SeleccionarNodo(i: int, valor: bool):
+	var nodobinario: NodoBinario = Common.getNodo(i)
+	nodobinario.seleccionar(valor)
+	emit_signal("nodo_seleccionado", nodobinario.esSeleccionado(), i)
 
 func _on_respuesta_enviada(respuesta):
 	estado_corrutina = estado_corrutina.resume(respuesta)
@@ -170,14 +176,13 @@ func _on_gui_input(event):
 func _on_node_gui_input(event:InputEvent, i:int):
 	if event is InputEventMouseButton: if event.pressed:
 		var nodobinario: NodoBinario = Common.getNodo(i)
-		nodobinario.seleccionar(not nodobinario.esSeleccionado())
-		emit_signal("nodo_seleccionado", nodobinario.esSeleccionado(), i)
+		SeleccionarNodo(i, not nodobinario.esSeleccionado())
 	pass
 
 func _on_AplicarAlgoritmo_nodo_seleccionado(valor:bool, i:int):
 	fase_actual.alSeleccionar(valor,i)
-	var nodobinario: NodoBinario = Common.getNodo(i)
-	nodobinario.colorear(color_nodo_seleccion if nodobinario.esSeleccionado() else color_nodo)
+	#var nodobinario: NodoBinario = Common.getNodo(i)
+	#nodobinario.colorear(color_nodo_seleccion if nodobinario.esSeleccionado() else color_nodo)
 #	if valor and i>1:
 #			if buildheap.CumpleCondicionDeOrden(i):
 #				prints("El nodo",i,"cumple la condición de orden.")
@@ -196,7 +201,7 @@ class Fase extends Node:
 		buildheap = $"..".buildheap
 	func alSalir(): pass
 	# Interacción
-	func alSeleccionar(valor:bool, i:int):
+	func alSeleccionar(_valor:bool, _i:int):
 		pass
 	func alConfirmar(): pass
 	
@@ -208,7 +213,11 @@ class Fase extends Node:
 		# $"..".estado_corutina = $"..".estado_corutina.resume(respuesta)
 		$"..".emit_signal("respuesta_enviada", respuesta)
 		#return resultado
-	func cb_resultado(resultado, tu_respuesta):
+	# Funciones fuera de la clase interna
+	func seleccionarNodo(i: int, valor: bool):
+		$"..".SeleccionarNodo(i,valor)
+	# Callbacks
+	func cb_resultado(_resultado, _tu_respuesta):
 		pass
 
 # Primera fase: seleccionar los elementos que no cumplen con la condición de
@@ -225,16 +234,23 @@ class PrimeraFase extends Fase:
 		.alEntrar() # De la superclase
 		$"../btnConfirmar".text = "FIN"
 		escribirMensaje("") # Limpiar
+	func alSalir():
+		.alSalir()
+		for i in seleccionados.duplicate():
+			seleccionarNodo(i, false)
+			Common.colorearNodo(i, $"..".color_nodo)
 	func alSeleccionar(valor:bool, i:int):
 		if estado == 0:
 			if valor: seleccionados.append(i)
 			else: seleccionados.erase(i)
 			$"../btnConfirmar".text = "FIN (%d seleccionados)" % seleccionados.size()
+			Common.colorearNodo(i, $"..".color_nodo_seleccion if valor else $"..".color_nodo)
 	func alConfirmar():
 		match estado:
 			0: # En progreso
 				intentos += 1
 				# Enviar respuesta
+				seleccionados.sort()
 				enviarRespuesta(seleccionados)
 			1: # Éxito
 				# Clic en SEGUIR >
@@ -243,9 +259,7 @@ class PrimeraFase extends Fase:
 				# Clic en REPASAR
 				pass
 	func cb_resultado(resultado, tu_respuesta):
-		var desordenados: Array = buildheap.VerNodosDesordenados()
-		seleccionados.sort()
-		if desordenados == seleccionados:
+		if resultado: # == true
 			print("Bien")
 			escribirInstruccion("Bien hecho")
 			escribirMensaje("¡Excelente! Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
@@ -265,6 +279,13 @@ class PrimeraFase extends Fase:
 						escribirInstruccion("Ha fallado")
 						$"../btnConfirmar".text = "REPASAR"
 			escribirMensaje("\n".join(lineas_msj))
+
+class FaseFiltrado extends Fase:
+	func _init(): ._init()
+	func alEntrar():
+		.alEntrar()
+		escribirInstruccion("Comenzá a aplicar el algoritmo - Marcá el nodo por el cual debemos comenzar")
+		escribirMensaje("")
 
 class FaceFin extends Fase:
 	func _init():

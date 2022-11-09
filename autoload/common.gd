@@ -40,6 +40,9 @@ func CrearNodo(parent:Control, pos:Vector2) -> NodoBinario:
 	parent.add_child(nodo)
 	return nodo
 	
+func colorearNodo(i: int, color: Color):
+	getNodo(i).colorear(color)
+	
 func getNodo(i: int) -> NodoBinario:
 	return nodos[i] as NodoBinario
 
