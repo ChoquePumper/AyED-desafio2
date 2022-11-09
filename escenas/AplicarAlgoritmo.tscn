@@ -116,6 +116,7 @@ text = "boton_de_confirmar"
 
 [connection signal="devolucion_de_respuesta" from="." to="." method="_on_devolucion_de_respuesta"]
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[connection signal="info_a_fase" from="." to="." method="_on_info_a_fase"]
 [connection signal="nodo_seleccionado" from="." to="." method="_on_AplicarAlgoritmo_nodo_seleccionado"]
 [connection signal="respuesta_enviada" from="." to="." method="_on_respuesta_enviada" flags=3]
 [connection signal="pressed" from="btnConfirmar" to="." method="_on_btnConfirmar_pressed"]

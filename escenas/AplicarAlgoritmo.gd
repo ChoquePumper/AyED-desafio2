@@ -2,8 +2,6 @@ extends Control
 
 # Variables
 var buildheap: BuildHeap
-var intentos: int = 0
-var intentos_max: int = 3
 var fase_actual: Fase
 var estado_corrutina	# GDScriptFunctionState
 var devolucion_de_respuesta
@@ -21,6 +19,7 @@ signal nodo_seleccionado(valor,i)
 signal devolucion_de_respuesta(resultado, tu_respuesta)
 # warning-ignore:unused_signal
 signal respuesta_enviada(respuesta)
+signal info_a_fase(info)
 
 # Input
 var is_dragging: bool = false
@@ -111,11 +110,43 @@ func CorutinaSimulador() -> bool:
 	# Si no hay nodos desordenados, se termina.
 	if nodos_desordenados.size() > 0:
 		print("Siguiente, marcar el nodo por donde comenzar.")
-		fase_completada = false
-		CambiarFase( FaseFiltrado.new() )
-		while not fase_completada:
-			respuesta = yield()
-			fase_completada = (respuesta == nodos_desordenados.back())
+		# Empezar por tamaño/2
+		var p: int = buildheap.GetSize() / 2
+		var primera_iteracion: bool = true
+		while p >= 1:
+			fase_completada = false
+			CambiarFase( FaseOrdenarNodoPrimeraVez.new() if primera_iteracion else FaseOrdenarNodo.new() )
+			# Seleccionar nodo con hojas
+			while not fase_completada:
+				respuesta = yield()
+				fase_completada = (respuesta == p)
+				emit_signal("devolucion_de_respuesta", fase_completada, respuesta)
+			# Seleccionar hijo izquierdo
+			print("¿Y ahora? ¿Cómo sigue?")
+			emit_signal("info_a_fase", {"siguiente":"seleccione_un_nodo"})
+			fase_completada = false
+			while not fase_completada:
+				respuesta = yield()
+				fase_completada = (respuesta == HeapBinaria.posicionHijoIzquierdo(p))
+				emit_signal("devolucion_de_respuesta", fase_completada, HeapBinaria.posicionHijoIzquierdo(p))
+			# Seleccionar hijo derecho, si tiene.
+			if HeapBinaria.posicionHijoDerecho(p) <= buildheap.GetSize():
+				emit_signal("info_a_fase", {
+					"siguiente":"seleccione_un_nodo"
+				})
+				fase_completada = false
+				while not fase_completada:
+					respuesta = yield()
+					fase_completada = (respuesta == HeapBinaria.posicionHijoDerecho(p))
+					emit_signal("devolucion_de_respuesta", fase_completada, HeapBinaria.posicionHijoDerecho(p))
+			# Seleccionar con que nodo hay que filtrar
+			CambiarFase( FaseFiltrado.new(p) )
+			fase_completada = false
+			while not fase_completada:
+				respuesta = yield()
+				fase_completada = (respuesta == null)
+			p -= 1
+			primera_iteracion = false
 	else:
 		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
 		CambiarFase( FaseFinSinNodosDesordenados.new() )
@@ -135,8 +166,6 @@ func DescartarNodo(nodo: CanvasItem):
 	nodo.name += "_discard"
 	nodo.queue_free()
 
-func AunQuedanIntentos() -> bool: return intentos_max > intentos
-
 func CambiarFase(fase: Fase):
 	if fase_actual != null:
 		fase_actual.alSalir()
@@ -155,6 +184,9 @@ func _on_respuesta_enviada(respuesta):
 
 func _on_devolucion_de_respuesta(resultado, tu_respuesta):
 	fase_actual.cb_resultado(resultado, tu_respuesta)
+
+func _on_info_a_fase(info):
+	fase_actual.cb_info_fase(info)
 
 func _on_gui_input(event):
 	# Implementación para poder arrastrar el arbol
@@ -209,6 +241,8 @@ class Fase extends Node:
 		$"../lblInstruccion".text = mensaje
 	func escribirMensaje(mensaje: String = ""):
 		$"../lblInfo".text = mensaje
+	func setEtiquetaBotonConfirmar(mensaje: String = ""):
+		$"../btnConfirmar".text = mensaje
 	func enviarRespuesta(respuesta):
 		# $"..".estado_corutina = $"..".estado_corutina.resume(respuesta)
 		$"..".emit_signal("respuesta_enviada", respuesta)
@@ -219,6 +253,7 @@ class Fase extends Node:
 	# Callbacks
 	func cb_resultado(_resultado, _tu_respuesta):
 		pass
+	func cb_info_fase(_info): pass
 
 # Primera fase: seleccionar los elementos que no cumplen con la condición de
 # orden de la MinHeap
@@ -232,7 +267,7 @@ class PrimeraFase extends Fase:
 		._init()
 	func alEntrar():
 		.alEntrar() # De la superclase
-		$"../btnConfirmar".text = "FIN"
+		setEtiquetaBotonConfirmar("FIN")
 		escribirMensaje("") # Limpiar
 	func alSalir():
 		.alSalir()
@@ -243,7 +278,7 @@ class PrimeraFase extends Fase:
 		if estado == 0:
 			if valor: seleccionados.append(i)
 			else: seleccionados.erase(i)
-			$"../btnConfirmar".text = "FIN (%d seleccionados)" % seleccionados.size()
+			setEtiquetaBotonConfirmar( "FIN (%d seleccionados)" % seleccionados.size() )
 			Common.colorearNodo(i, $"..".color_nodo_seleccion if valor else $"..".color_nodo)
 	func alConfirmar():
 		match estado:
@@ -261,10 +296,10 @@ class PrimeraFase extends Fase:
 	func cb_resultado(resultado, tu_respuesta):
 		if resultado: # == true
 			print("Bien")
-			escribirInstruccion("Bien hecho")
-			escribirMensaje("¡Excelente! Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
+			escribirInstruccion("¡Excelente!")
+			escribirMensaje("Marcaste todos los nodos que no cumplen la condición de orden de una Heap – Dale clic para seguir")
 			estado = 1
-			$"../btnConfirmar".text = "SEGUIR >"
+			setEtiquetaBotonConfirmar("SEGUIR >")
 		else:
 			print("Mal")
 			var lineas_msj: PoolStringArray
@@ -277,22 +312,82 @@ class PrimeraFase extends Fase:
 						lineas_msj.append("Repasá los contenidos relacionados y consultá los ejercicios resueltos. Dale clic en REPASAR")
 						estado = 2
 						escribirInstruccion("Ha fallado")
-						$"../btnConfirmar".text = "REPASAR"
+						setEtiquetaBotonConfirmar("REPASAR")
 			escribirMensaje("\n".join(lineas_msj))
 
-class FaseFiltrado extends Fase:
+class FaseOrdenarNodo extends Fase:
+	var paso: String
+	var seleccionado: int = 0
+	var str_ins_inicio: String = "Buenísimo!!! – ¿Por qué nodo corresponde seguir ahora?"
+	var str_ins_correcto: String = "¡Correcto!"
 	func _init(): ._init()
 	func alEntrar():
 		.alEntrar()
-		escribirInstruccion("Comenzá a aplicar el algoritmo - Marcá el nodo por el cual debemos comenzar")
+		escribirInstruccion(str_ins_inicio)
 		escribirMensaje("")
+		cambiarPaso("seleccionar_nodo_a_ordenar")
+	func alSeleccionar(valor:bool, i:int):
+		seleccionado = i
+		enviarRespuesta(i)
+	func cb_resultado(resultado, tu_respuesta):
+		match paso:
+			"seleccionar_nodo_a_ordenar":
+				if resultado:
+					Common.colorearNodo(int(tu_respuesta), Color.darkgreen)
+					Common.getNodo(int(tu_respuesta)).seleccionar(false)
+					escribirInstruccion(str_ins_correcto)
+				else:
+					escribirInstruccion("No es correcto - Reintentá")
+					escribirMensaje("Recordá que hay una fórmula y un criterio para saber por dónde se comienza")
+			"seleccione_un_nodo":
+				if resultado:
+					Common.colorearNodo(int(tu_respuesta), Color.yellow)
+					escribirInstruccion("Bien. ¿Cuál otro?")
+	func cb_info_fase(info):
+		assert(info is Dictionary)
+		if info.has("siguiente"):
+			cambiarPaso( info["siguiente"] )
+	func cambiarPaso(nombre:String):
+		match nombre:
+			"seleccionar_nodo_a_ordenar":
+				pass
+			"seleccione_un_nodo":
+				print("paso: nombre ",nombre)
+				if paso!=nombre:
+					escribirMensaje("¿Y ahora? ¿Cómo sigue?")
+				else:
+					escribirMensaje("¿Cómo sigue?")
+			_:
+				printerr("Paso desconocido: "+nombre)
+		paso = nombre
 
+class FaseOrdenarNodoPrimeraVez extends FaseOrdenarNodo:
+	func _init():
+		._init()
+		str_ins_inicio = "Comenzá a aplicar el algoritmo - Marcá el nodo por el cual debemos comenzar"
+		str_ins_correcto = "¡Correcto! Es nuestro comienzo"
+
+class FaseFiltrado extends Fase:
+	var posicion: int
+	var seleccionado
+	func _init(i:int):
+		._init()
+		posicion = i
+	func alEntrar():
+		.alEntrar()
+		assert(posicion <= buildheap.GetSize())
+		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cual?")
+		escribirMensaje("Seleccione un nodo o haga clic en NO si no hay que intercambiar")
+		setEtiquetaBotonConfirmar("NO")
+	func alConfirmar():
+		enviarRespuesta(seleccionado)
+		
 class FaceFin extends Fase:
 	func _init():
 		._init()
 	func alEntrar():
 		.alEntrar() # De la superclase
-		$"../btnConfirmar".text = "Finalizar"
+		setEtiquetaBotonConfirmar("Finalizar")
 	func alConfirmar():
 		# Salir de la aplicacion
 		get_tree().quit(0)
@@ -304,3 +399,4 @@ class FaseFinSinNodosDesordenados extends FaceFin:
 		.alEntrar() # De la superclase
 		escribirInstruccion("Bueno... Se acabó.")
 		escribirMensaje("No hay nodos desordenados. No hay nada más que hacer.")
+

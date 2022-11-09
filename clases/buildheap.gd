@@ -24,6 +24,8 @@ func VerNodosDesordenados() -> Array:
 			lista_de_posiciones.append(i+1)
 	return lista_de_posiciones
 
+func GetSize() -> int: return minheap.getSize()
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
