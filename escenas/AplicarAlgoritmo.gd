@@ -148,10 +148,18 @@ func CorutinaSimulador() -> bool:
 				# Comprobar si hay que filtrar
 				var respuesta_correcta = VerSiguienteFiltradoHaciaAbajo(p_filtrado)
 				var correcto: bool = respuesta == respuesta_correcta
-				if correcto and respuesta!=null:
-					# Realizar el filtrado si la respuesta es correcta
-					IntercambiarNodos(p_filtrado, int(respuesta))
-					p_filtrado = int(respuesta)
+				if correcto:
+					var hijos: Array = [
+						HeapBinaria.posicionHijoIzquierdo(p_filtrado),
+						HeapBinaria.posicionHijoDerecho(p_filtrado)
+					]
+					for pos in hijos:
+						if buildheap.minheap.PosicionValida(pos) and pos != respuesta:
+							Common.colorearNodo(pos, Color.green)
+					if respuesta!=null:
+						# Realizar el filtrado si la respuesta es correcta
+						IntercambiarNodos(p_filtrado, int(respuesta))
+						p_filtrado = int(respuesta)
 				emit_signal("devolucion_de_respuesta", correcto, respuesta)
 				fase_completada = correcto and respuesta_correcta == null
 			p -= 1
@@ -177,7 +185,8 @@ func VerSiguienteFiltradoHaciaAbajo(p: int):
 	return null
 
 func IntercambiarNodos(p_a:int, p_b:int):
-	assert( buildheap.IntercambiarNodos(p_a, p_b) )
+	var debug_check: bool = buildheap.IntercambiarNodos(p_a, p_b)
+	assert( debug_check )
 	SetValorArreglo(p_a)
 	SetValorArreglo(p_b)
 
@@ -193,6 +202,20 @@ func DescartarNodo(nodo: CanvasItem):
 	nodo.visible = false
 	nodo.name += "_discard"
 	nodo.queue_free()
+
+func Salir(a_repasar: bool = false):
+	if a_repasar:
+		# Saltar cuadro de repasar
+		$CuadroRepasar.popup_centered(Vector2(380, 200))
+		# Ocultar botón de cerrar
+		$CuadroRepasar.get_close_button().visible = false
+		# Cambiar el tamaño y etiqueta al botón
+		$CuadroRepasar.get_ok().rect_min_size = Vector2(80,24)
+		$CuadroRepasar.get_ok().text = "Salir"
+		# Esperar a la señal cuando se pulse el botón
+		yield($CuadroRepasar, "confirmed")
+	# Salir de la aplicación
+	get_tree().quit(0)
 
 func MostrarBotonConfirmar():
 	$btnConfirmar.disabled = false
@@ -334,7 +357,7 @@ class PrimeraFase extends Fase:
 				enviarRespuesta(null)
 			2: # Falló
 				# Clic en REPASAR
-				get_tree().quit(0)
+				$"..".Salir(true)
 	func cb_resultado(resultado, _tu_respuesta):
 		if resultado: # == true
 			print("Bien")
@@ -419,7 +442,7 @@ class FaseFiltrado extends Fase:
 		.alEntrar()
 		assert(posicion <= buildheap.GetSize())
 		mostrarBotonConfirmar()
-		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cual?")
+		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cuál?")
 		escribirMensaje("Seleccione un nodo por donde va a filtrar o haga clic en NO si no hay que intercambiar.")
 		setEtiquetaBotonConfirmar("NO")
 	func alSeleccionar(_valor:bool, i:int):
@@ -454,7 +477,7 @@ class FaseFin extends Fase:
 		escribirMensaje("Has llegado al final de la simuación. Haz clic en Finalizar para salir.")
 	func alConfirmar():
 		# Salir de la aplicacion
-		get_tree().quit(0)
+		$"..".Salir()
 
 class FaseFinSinNodosDesordenados extends FaseFin:
 	func _init():
@@ -464,3 +487,21 @@ class FaseFinSinNodosDesordenados extends FaseFin:
 		escribirInstruccion("Bueno... Es todo.")
 		escribirMensaje("No hay nodos desordenados. No hay nada más que hacer.")
 
+
+func _on_RichTextLabel_meta_clicked(meta):
+	if meta is String:
+		var meta2: String = meta
+		if meta2.begins_with("{") and meta2.ends_with("}"):
+			var dict = parse_json(meta2)
+			assert(typeof(dict) == TYPE_DICTIONARY)
+			if dict.has("action"):
+				match dict["action"]:
+					"copy":
+						# Copiar
+						print_debug("Copiando enlace")
+						OS.clipboard = dict["data"]
+					_:
+						print_debug("Acción desconocida: ", dict["action"])
+		else:
+			var err: int = OS.shell_open(meta2)
+	pass # Replace with function body.

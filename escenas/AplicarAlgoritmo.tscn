@@ -79,6 +79,10 @@ script = ExtResource( 2 )
 [node name="NodosDelArbol" type="Control" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_left = 29.0
+margin_top = 18.0
+margin_right = 29.0
+margin_bottom = 18.0
 
 [node name="ScrollListaDeValores" type="ScrollContainer" parent="."]
 anchor_right = 1.0
@@ -164,9 +168,39 @@ anims/RESET = SubResource( 5 )
 anims/mostrarBotonConfirmarReversa = SubResource( 6 )
 anims/ocultarBotonConfirmar = SubResource( 7 )
 
+[node name="CuadroRepasar" type="AcceptDialog" parent="."]
+margin_right = 362.0
+margin_bottom = 215.0
+theme = ExtResource( 3 )
+popup_exclusive = true
+window_title = "A repasar"
+resizable = true
+dialog_text = "Va a tener que repasar los temas de BuildHeap.
+
+Puede usar el enlace de abajo para ver sobre los contenidos necesarios."
+dialog_hide_on_ok = false
+dialog_autowrap = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CuadroRepasar"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 93.0
+margin_right = -8.0
+margin_bottom = -41.0
+theme = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[ul]
+* [url=https://drive.google.com/drive/u/0/folders/1rtA56N6fJZIMtEeJFA0bOetwbfFHTo6G]Enlace a carpeta de Drive[/url] ([url={\"action\":\"copy\", \"data\":\"https://drive.google.com/drive/u/0/folders/1rtA56N6fJZIMtEeJFA0bOetwbfFHTo6G\"}]copiar[/url])
+[/ul]"
+text = "
+* Enlace a carpeta de Drive (copiar)
+"
+
 [connection signal="devolucion_de_respuesta" from="." to="." method="_on_devolucion_de_respuesta"]
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="info_a_fase" from="." to="." method="_on_info_a_fase"]
 [connection signal="nodo_seleccionado" from="." to="." method="_on_AplicarAlgoritmo_nodo_seleccionado"]
 [connection signal="respuesta_enviada" from="." to="." method="_on_respuesta_enviada" flags=3]
 [connection signal="pressed" from="btnConfirmar" to="." method="_on_btnConfirmar_pressed"]
+[connection signal="meta_clicked" from="CuadroRepasar/RichTextLabel" to="." method="_on_RichTextLabel_meta_clicked"]

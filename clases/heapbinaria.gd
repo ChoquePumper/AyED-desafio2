@@ -111,4 +111,7 @@ func SimularPercolateDown(p:int):
 			break
 	return recorrido
 
+func PosicionValida(p:int):
+	return 0 < p and p <= getSize()
+
 func GetCopiaArreglo() -> Array: return arreglo.slice(1, size)
