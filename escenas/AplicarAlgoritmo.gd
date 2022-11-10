@@ -88,6 +88,7 @@ func _ready():
 
 func _exit_tree():
 	buildheap.free()
+	if fase_actual: fase_actual.free()
 	
 func EmpezarSimulador():
 	estado_corrutina = CorutinaSimulador()
@@ -153,9 +154,12 @@ func CorutinaSimulador() -> bool:
 					IntercambiarNodos(p_filtrado, int(respuesta))
 					p_filtrado = int(respuesta)
 				emit_signal("devolucion_de_respuesta", correcto, respuesta)
-				fase_completada = respuesta_correcta == null
+				fase_completada = correcto and respuesta_correcta == null
 			p -= 1
 			primera_iteracion = false
+		# Fin de la simulacion
+		print("Fin de la simulacion.")
+		CambiarFase( FaseFin.new() )
 	else:
 		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
 		CambiarFase( FaseFinSinNodosDesordenados.new() )
@@ -382,7 +386,6 @@ class FaseOrdenarNodo extends Fase:
 			"seleccionar_nodo_a_ordenar":
 				pass
 			"seleccione_un_nodo":
-				print("paso: nombre ",nombre)
 				if paso!=nombre:
 					escribirMensaje("¿Y ahora? ¿Cómo sigue?")
 				else:
@@ -413,18 +416,27 @@ class FaseFiltrado extends Fase:
 		enviarRespuesta(i)
 	func alConfirmar():
 		enviarRespuesta(null)
+	func cb_resultado(resultado, tu_respuesta):
+		if resultado:
+			Common.getNodo(posicion).colorear(Color.green)
+			if tu_respuesta != null:
+				Common.getNodo(tu_respuesta).colorear(Color.green)
+			escribirMensaje("Seleccione un nodo o haga clic en LISTO si no hay mas que intercambiar")
+			setEtiquetaBotonConfirmar("LISTO")
 		
-class FaceFin extends Fase:
+class FaseFin extends Fase:
 	func _init():
 		._init()
 	func alEntrar():
 		.alEntrar() # De la superclase
 		setEtiquetaBotonConfirmar("Finalizar")
+		escribirInstruccion("¡Lo lograste!")
+		escribirMensaje("Has llegado al final de la simuacion. Haz clic en Finalizar para salir.")
 	func alConfirmar():
 		# Salir de la aplicacion
 		get_tree().quit(0)
 
-class FaseFinSinNodosDesordenados extends FaceFin:
+class FaseFinSinNodosDesordenados extends FaseFin:
 	func _init():
 		._init()
 	func alEntrar():
