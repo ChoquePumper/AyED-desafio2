@@ -152,6 +152,7 @@ func _on_btnConfirmarValores_pressed():
 	# Verificar que todos los valores de la lista sean válidos
 	if not Global.todosLosValoresListos():
 		for i in Global.n_elementos:
+# warning-ignore:return_value_discarded
 			ValidarCampo(i+1, true)
 	else:
 		Global.test_input = false
@@ -159,6 +160,7 @@ func _on_btnConfirmarValores_pressed():
 		# actual y se los pone al nodo raiz ("/root")
 		MoverARaiz($NodosDelArbol)
 		MoverARaiz($ScrollListaDeValores)
+# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://escenas/AplicarAlgoritmo.tscn")
 
 func MoverARaiz(nodo: Node):

@@ -2,10 +2,6 @@ extends Node
 
 var nodos := Array()
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
 func ArmarArbolBinarioAlt(control: Control, n: int):
 	# Nodos
 	nodos.append(0)
@@ -14,6 +10,7 @@ func ArmarArbolBinarioAlt(control: Control, n: int):
 		nodo.colorear(Color.steelblue)
 		#nodo.setearNumero(i+1)
 		nodos.append( nodo )
+# warning-ignore:return_value_discarded
 		nodo.connect("gui_input", control.get_parent(), "_on_node_gui_input", [i+1])
 	# Asociar nodos
 	for i in nodos.size(): if i > 0:

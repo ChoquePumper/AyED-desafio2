@@ -45,6 +45,7 @@ func Insert(dato):
 #		arreglo[N] = arreglo[N/2]
 #		N = N/2
 #	arreglo[N] = dato
+# warning-ignore:return_value_discarded
 	_PercolateUp(N)
 
 # Filtrado hacia arriba
@@ -67,6 +68,7 @@ func DeleteMin():
 	arreglo[1] = ultimo
 	# Filtrado hacia abajo o Percolate Down
 	var p := 1
+# warning-ignore:return_value_discarded
 	_PercolateDown(p)
 	return dato
 

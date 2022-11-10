@@ -4,7 +4,6 @@ extends Control
 var buildheap: BuildHeap
 var fase_actual: Fase
 var estado_corrutina	# GDScriptFunctionState
-var devolucion_de_respuesta
 
 # Colores
 export var color_nodo: Color = Color.steelblue
@@ -35,10 +34,11 @@ func _ready():
 		# Aparentemente, remover nodos hace que se desconecten de todas las señales.
 		# Reconectar señales
 		for i in Global.n_elementos:
+# warning-ignore:return_value_discarded
 			Common.getNodo(i+1).connect("gui_input", self, "_on_node_gui_input", [i+1])
 	else:
-		# Armar datos de prueba si, por ejemplo, se empieza desde esta escena "AplicarAlgoritmo"
-		# sin pasar por el ingreso manual de datos
+		# Armar datos de prueba si, por ejemplo, se empieza desde esta escena
+		# "AplicarAlgoritmo" sin pasar por el ingreso manual de datos
 		
 		#Global.generarValoresAleatorios(100)
 		# Usando el ejemplo del anexo.
@@ -55,7 +55,6 @@ func _ready():
 			dup_node.get_node("Label").text = str(i+1)
 			dup_node.rect_position.y += 32
 			lista.add_child( dup_node )
-			#ConectarLineEdit(dup_node, i+1)
 		
 		# Armar árbol binario
 		Common.ArmarArbolBinarioAlt(nodos_del_arbol, Global.n_elementos)
@@ -63,8 +62,8 @@ func _ready():
 			var valor_campo := str(Global.getValorCampo(i+1))
 			var campo: LineEdit = lista.get_child(i)
 			campo.text = valor_campo
+# warning-ignore:return_value_discarded
 			(Common.nodos[i+1] as NodoBinario).setearNumeroPorTexto(valor_campo)
-		pass
 		
 	assert(Global.todosLosValoresListos())
 	assert(scroll_lista_valores); assert(nodos_del_arbol)
@@ -77,12 +76,9 @@ func _ready():
 		for nodo in lista.get_children():
 			(nodo as LineEdit).editable = false
 	if nodos_del_arbol:
+# warning-ignore:return_value_discarded
 		(nodos_del_arbol as Control).connect("gui_input", self, "_on_gui_input")
 	
-	#CambiarFase( PrimeraFase.new() )
-	#print( buildheap.VerNodosQueNoCumplenConLaCondicionDeOrden() )
-	#buildheap.AplicarAlgoritmo()
-	#print( buildheap.minheap.GetCopiaArreglo() )
 	EmpezarSimulador()
 
 func _exit_tree():
@@ -111,6 +107,7 @@ func CorutinaSimulador() -> bool:
 	if nodos_desordenados.size() > 0:
 		print("Siguiente, marcar el nodo por donde comenzar.")
 		# Empezar por tamaño/2
+# warning-ignore:integer_division
 		var p: int = buildheap.GetSize() / 2
 		var primera_iteracion: bool = true
 		while p >= 1:
@@ -208,6 +205,7 @@ func OcultarBotonConfirmar():
 func SetValorArreglo(i:int):
 	var valor: String = str( buildheap.GetValor(i) )
 	scroll_lista_valores.get_node("ListaDeValores").get_child(i-1).text = valor
+# warning-ignore:return_value_discarded
 	Common.getNodo(i).setearNumeroPorTexto( valor )
 
 func CambiarFase(fase: Fase):
@@ -259,11 +257,6 @@ func _on_AplicarAlgoritmo_nodo_seleccionado(valor:bool, i:int):
 	fase_actual.alSeleccionar(valor,i)
 	#var nodobinario: NodoBinario = Common.getNodo(i)
 	#nodobinario.colorear(color_nodo_seleccion if nodobinario.esSeleccionado() else color_nodo)
-#	if valor and i>1:
-#			if buildheap.CumpleCondicionDeOrden(i):
-#				prints("El nodo",i,"cumple la condición de orden.")
-#			else:
-#				prints("El nodo",i,"NO cumple la condición de orden.")
 
 # Relacionado a fase
 func _on_btnConfirmar_pressed():
@@ -342,7 +335,7 @@ class PrimeraFase extends Fase:
 			2: # Falló
 				# Clic en REPASAR
 				get_tree().quit(0)
-	func cb_resultado(resultado, tu_respuesta):
+	func cb_resultado(resultado, _tu_respuesta):
 		if resultado: # == true
 			print("Bien")
 			escribirInstruccion("¡Excelente!")
@@ -351,7 +344,7 @@ class PrimeraFase extends Fase:
 			setEtiquetaBotonConfirmar("SEGUIR >")
 		else:
 			print("Mal")
-			var lineas_msj: PoolStringArray
+			var lineas_msj := PoolStringArray()
 			lineas_msj.append("Para que sea una heap los nodos deben cumplir con una condición de orden (Intento %d/%d)"%[intentos,intentos_max] )
 			match intentos:
 				2:
@@ -376,7 +369,7 @@ class FaseOrdenarNodo extends Fase:
 		escribirMensaje("")
 		cambiarPaso("seleccionar_nodo_a_ordenar")
 		ocultarBotonConfirmar()
-	func alSeleccionar(valor:bool, i:int):
+	func alSeleccionar(_valor:bool, i:int):
 		seleccionado = i
 		enviarRespuesta(i)
 	func cb_resultado(resultado, tu_respuesta):
@@ -429,7 +422,7 @@ class FaseFiltrado extends Fase:
 		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cual?")
 		escribirMensaje("Seleccione un nodo por donde va a filtrar o haga clic en NO si no hay que intercambiar.")
 		setEtiquetaBotonConfirmar("NO")
-	func alSeleccionar(valor:bool, i:int):
+	func alSeleccionar(_valor:bool, i:int):
 		if posicion != i: enviarRespuesta(i)
 	func alConfirmar():
 		enviarRespuesta(null)

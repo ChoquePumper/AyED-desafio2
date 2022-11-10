@@ -9,8 +9,9 @@ var hijo_derecho: NodoBinario
 
 var rel_hpos: float = 0
 
-func _init(dato = null):
-	setDato(dato)
+# Al final no usé dato para el proyecto
+func _init(_dato = null):
+	setDato(_dato)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

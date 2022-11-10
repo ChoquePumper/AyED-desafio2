@@ -10,7 +10,6 @@ const MAX_ELEMENTOS: int = 20
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	for i in MAX_ELEMENTOS: lista_elementos.append(null)
-	#print("global loaded")
 	#print(lista_elementos)
 
 func valorValido(valor: String):
