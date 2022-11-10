@@ -50,7 +50,6 @@ func _ready():
 			Global.setearCampo(i+1, str(valores_de_prueba[i]))
 		
 		var lista: Node = scroll_lista_valores.get_node("ListaDeValores")
-		#ConectarLineEdit($ScrollListaDeValores/ListaDeValores/Valor1, 1)
 		for i in Global.n_elementos: if i > 0:
 			var dup_node: LineEdit = lista.get_node("Valor1").duplicate()
 			dup_node.get_node("Label").text = str(i+1)
@@ -117,6 +116,8 @@ func CorutinaSimulador() -> bool:
 		while p >= 1:
 			fase_completada = false
 			CambiarFase( FaseOrdenarNodoPrimeraVez.new() if primera_iteracion else FaseOrdenarNodo.new() )
+			if not primera_iteracion:
+				print("Vamos por el siguiente nodo. Márquelo.")
 			# Seleccionar nodo con hojas
 			while not fase_completada:
 				respuesta = yield()
@@ -141,6 +142,7 @@ func CorutinaSimulador() -> bool:
 					fase_completada = (respuesta == HeapBinaria.posicionHijoDerecho(p))
 					emit_signal("devolucion_de_respuesta", fase_completada, HeapBinaria.posicionHijoDerecho(p))
 			# Seleccionar con que nodo hay que filtrar
+			print("Comenzamos a filtrar el nodo seleccionado.")
 			CambiarFase( FaseFiltrado.new(p) )
 			fase_completada = false
 			var p_filtrado: int = p
@@ -158,7 +160,7 @@ func CorutinaSimulador() -> bool:
 			p -= 1
 			primera_iteracion = false
 		# Fin de la simulacion
-		print("Fin de la simulacion.")
+		print("Fin de la simulación.")
 		CambiarFase( FaseFin.new() )
 	else:
 		print("No hay nodos desordenados. No hay nada más que hacer. Fin!")
@@ -194,6 +196,14 @@ func DescartarNodo(nodo: CanvasItem):
 	nodo.visible = false
 	nodo.name += "_discard"
 	nodo.queue_free()
+
+func MostrarBotonConfirmar():
+	$btnConfirmar.disabled = false
+	$AnimationPlayer.play_backwards("mostrarBotonConfirmarReversa", -1)
+	
+func OcultarBotonConfirmar():
+	$btnConfirmar.disabled = true
+	$AnimationPlayer.play("ocultarBotonConfirmar", -1)
 
 func SetValorArreglo(i:int):
 	var valor: String = str( buildheap.GetValor(i) )
@@ -284,6 +294,11 @@ class Fase extends Node:
 	# Funciones fuera de la clase interna
 	func seleccionarNodo(i: int, valor: bool):
 		$"..".SeleccionarNodo(i,valor)
+	func ocultarBotonConfirmar(): $"..".OcultarBotonConfirmar()
+	func mostrarBotonConfirmar(): $"..".MostrarBotonConfirmar()
+	# Similar a la función anterior pero no emite la señal
+	func cambiarSeleccion(i: int, valor: bool):
+		Common.getNodo(i).seleccionar(valor)
 	# Callbacks
 	func cb_resultado(_resultado, _tu_respuesta):
 		pass
@@ -326,7 +341,7 @@ class PrimeraFase extends Fase:
 				enviarRespuesta(null)
 			2: # Falló
 				# Clic en REPASAR
-				pass
+				get_tree().quit(0)
 	func cb_resultado(resultado, tu_respuesta):
 		if resultado: # == true
 			print("Bien")
@@ -360,6 +375,7 @@ class FaseOrdenarNodo extends Fase:
 		escribirInstruccion(str_ins_inicio)
 		escribirMensaje("")
 		cambiarPaso("seleccionar_nodo_a_ordenar")
+		ocultarBotonConfirmar()
 	func alSeleccionar(valor:bool, i:int):
 		seleccionado = i
 		enviarRespuesta(i)
@@ -397,32 +413,43 @@ class FaseOrdenarNodo extends Fase:
 class FaseOrdenarNodoPrimeraVez extends FaseOrdenarNodo:
 	func _init():
 		._init()
-		str_ins_inicio = "Comenzá a aplicar el algoritmo - Marcá el nodo por el cual debemos comenzar"
+		str_ins_inicio = "Comenzá a aplicar el algoritmo - Marcá el nodo por el cual debemos comenzar."
 		str_ins_correcto = "¡Correcto! Es nuestro comienzo"
 
 class FaseFiltrado extends Fase:
 	var posicion: int
-	var seleccionado
+	var niveles_filtrados: int = 0
 	func _init(i:int):
 		._init()
 		posicion = i
 	func alEntrar():
 		.alEntrar()
 		assert(posicion <= buildheap.GetSize())
+		mostrarBotonConfirmar()
 		escribirInstruccion("Ok. ¿Y ahora? ¿Hay que intercambiar? ¿Cual?")
-		escribirMensaje("Seleccione un nodo o haga clic en NO si no hay que intercambiar")
+		escribirMensaje("Seleccione un nodo por donde va a filtrar o haga clic en NO si no hay que intercambiar.")
 		setEtiquetaBotonConfirmar("NO")
 	func alSeleccionar(valor:bool, i:int):
-		enviarRespuesta(i)
+		if posicion != i: enviarRespuesta(i)
 	func alConfirmar():
 		enviarRespuesta(null)
 	func cb_resultado(resultado, tu_respuesta):
 		if resultado:
 			Common.getNodo(posicion).colorear(Color.green)
 			if tu_respuesta != null:
-				Common.getNodo(tu_respuesta).colorear(Color.green)
-			escribirMensaje("Seleccione un nodo o haga clic en LISTO si no hay mas que intercambiar")
+				posicion = int(tu_respuesta)
+				Common.getNodo(tu_respuesta).colorear(Color.darkgreen)
+				niveles_filtrados += 1
+			escribirMensaje("Seleccione otro nodo por donde va a filtrar o haga clic en LISTO si no hay mas que intercambiar.")
 			setEtiquetaBotonConfirmar("LISTO")
+		else:
+			if tu_respuesta == null:
+				if niveles_filtrados > 0:
+					escribirMensaje("No creo que esté listo aún.")
+				else:
+					escribirMensaje("Yo veo que hay que intercambiar con algún nodo. ¿Sabe cuál es?")
+			else:
+				escribirMensaje("Recuede qué se compara para realizar el filtrado.")
 		
 class FaseFin extends Fase:
 	func _init():
@@ -431,7 +458,7 @@ class FaseFin extends Fase:
 		.alEntrar() # De la superclase
 		setEtiquetaBotonConfirmar("Finalizar")
 		escribirInstruccion("¡Lo lograste!")
-		escribirMensaje("Has llegado al final de la simuacion. Haz clic en Finalizar para salir.")
+		escribirMensaje("Has llegado al final de la simuación. Haz clic en Finalizar para salir.")
 	func alConfirmar():
 		# Salir de la aplicacion
 		get_tree().quit(0)
@@ -441,6 +468,6 @@ class FaseFinSinNodosDesordenados extends FaseFin:
 		._init()
 	func alEntrar():
 		.alEntrar() # De la superclase
-		escribirInstruccion("Bueno... Se acabó.")
+		escribirInstruccion("Bueno... Es todo.")
 		escribirMensaje("No hay nodos desordenados. No hay nada más que hacer.")
 

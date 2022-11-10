@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://fonts/LiberationSans-Bold.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://escenas/AplicarAlgoritmo.gd" type="Script" id=2]
@@ -23,6 +23,53 @@ font_data = ExtResource( 1 )
 [sub_resource type="DynamicFont" id=4]
 size = 20
 font_data = ExtResource( 4 )
+
+[sub_resource type="Animation" id=5]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnConfirmar:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
+[sub_resource type="Animation" id=6]
+resource_name = "mostrarBotonConfirmarReversa"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnConfirmar:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 5, 1 ),
+"update": 0,
+"values": [ 0.0, 48 ]
+}
+
+[sub_resource type="Animation" id=7]
+resource_name = "ocultarBotonConfirmar"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("btnConfirmar:margin_bottom")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 0.2, 1 ),
+"update": 0,
+"values": [ 0.0, 48 ]
+}
 
 [node name="AplicarAlgoritmo" type="Control"]
 anchor_right = 1.0
@@ -113,6 +160,9 @@ theme = ExtResource( 3 )
 text = "boton_de_confirmar"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/RESET = SubResource( 5 )
+anims/mostrarBotonConfirmarReversa = SubResource( 6 )
+anims/ocultarBotonConfirmar = SubResource( 7 )
 
 [connection signal="devolucion_de_respuesta" from="." to="." method="_on_devolucion_de_respuesta"]
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
